@@ -142,18 +142,61 @@ export function createBracket(
   };
 }
 
-// Main function to generate all brackets
+// Main function to generate all brackets with smart distribution
 export function generateAllBrackets(
   poolStandings: Map<string, TeamStanding[]>
 ): Map<BracketDivision, Bracket> {
-  const unassignedBrackets = assignToBrackets(poolStandings);
-  const reseedBracket = reseedBrackets(unassignedBrackets);
+  // Collect all teams and sort globally
+  const allTeams: BracketTeam[] = [];
 
+  poolStandings.forEach((standings) => {
+    standings.forEach((standing) => {
+      allTeams.push({
+        seed: 0,
+        team: standing.team,
+        standing: standing,
+      });
+    });
+  });
+
+  allTeams.sort((a, b) => {
+    if (a.standing.fivbPoints !== b.standing.fivbPoints) {
+      return b.standing.fivbPoints - a.standing.fivbPoints;
+    }
+    return b.standing.setDifference - a.standing.setDifference;
+  });
+
+  // Determine number of brackets needed (4 teams per bracket)
+  const teamCount = allTeams.length;
+  const bracketCount = Math.ceil(teamCount / 4);
+
+  const availableDivisions: BracketDivision[] = [
+    "Gold",
+    "Silver",
+    "Bronze",
+    "Iron",
+    "Wood",
+  ];
+
+  // Create brackets and distribute teams round-robin
   const brackets = new Map<BracketDivision, Bracket>();
 
-  reseedBracket.forEach((teams, division) => {
-    brackets.set(division, createBracket(division, teams));
-  });
+  for (let divIndex = 0; divIndex < bracketCount; divIndex++) {
+    const division = availableDivisions[divIndex] || "Wood";
+    const bracketTeams: BracketTeam[] = [];
+
+    // Distribute teams round-robin across brackets
+    for (let teamIndex = divIndex; teamIndex < allTeams.length; teamIndex += bracketCount) {
+      bracketTeams.push(allTeams[teamIndex]);
+    }
+
+    // Assign seeds within bracket
+    bracketTeams.forEach((team, index) => {
+      team.seed = index + 1;
+    });
+
+    brackets.set(division, createBracket(division, bracketTeams));
+  }
 
   return brackets;
 }

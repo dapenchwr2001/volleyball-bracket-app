@@ -3,6 +3,7 @@
 import { Tournament, BracketDivision } from "@/lib/types";
 import { getAllPoolStandings } from "@/lib/seeding";
 import { generateAllBrackets } from "@/lib/bracket-generator";
+import BracketVisualization from "./bracket-visualization";
 
 interface BracketsViewProps {
   tournament: Tournament;
@@ -58,76 +59,83 @@ export default function BracketsView({ tournament }: BracketsViewProps) {
         }
 
         return (
-          <div
-            key={division}
-            className={`rounded-lg border-2 p-6 ${DIVISION_COLORS[division]}`}
-          >
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">
-              {DIVISION_EMOJI[division]} {division} Bracket ({bracket.teams.length} teams)
-            </h3>
+          <div key={division} className="space-y-6">
+            {/* Visual Bracket for Printing */}
+            <BracketVisualization division={division} teams={bracket.teams} />
 
-            <div className="overflow-x-auto">
-              <table className="w-full bg-white rounded-lg shadow">
-                <thead className="bg-gray-200 border-b">
-                  <tr>
-                    <th className="text-left px-4 py-3 font-semibold text-gray-900">
-                      Seed
-                    </th>
-                    <th className="text-left px-4 py-3 font-semibold text-gray-900">
-                      Team
-                    </th>
-                    <th className="text-center px-4 py-3 font-semibold text-gray-900">
-                      Pool
-                    </th>
-                    <th className="text-center px-4 py-3 font-semibold text-gray-900">
-                      Points
-                    </th>
-                    <th className="text-center px-4 py-3 font-semibold text-gray-900">
-                      Set Diff
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {bracket.teams.map((bracketTeam, index) => (
-                    <tr
-                      key={bracketTeam.team.id}
-                      className={`border-b ${
-                        index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                      }`}
-                    >
-                      <td className="px-4 py-3 font-bold text-lg text-gray-900 w-12">
-                        {bracketTeam.seed}
-                      </td>
-                      <td className="px-4 py-3 text-gray-900">
-                        {bracketTeam.team.name}
-                      </td>
-                      <td className="px-4 py-3 text-center text-gray-700">
-                        {bracketTeam.team.poolId.split("-")[0] ||
-                          bracketTeam.team.poolId}
-                      </td>
-                      <td className="px-4 py-3 text-center font-semibold text-blue-600">
-                        {bracketTeam.standing.fivbPoints}
-                      </td>
-                      <td className="px-4 py-3 text-center text-gray-700">
-                        {bracketTeam.standing.setDifference > 0 ? "+" : ""}
-                        {bracketTeam.standing.setDifference}
-                      </td>
+            {/* Seeding Details Table */}
+            <div className={`rounded-lg border-2 p-6 ${DIVISION_COLORS[division]}`}>
+              <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                Seeding Details
+              </h4>
+              <div className="overflow-x-auto">
+                <table className="w-full bg-white rounded-lg shadow">
+                  <thead className="bg-gray-200 border-b">
+                    <tr>
+                      <th className="text-left px-4 py-3 font-semibold text-gray-900">
+                        Seed
+                      </th>
+                      <th className="text-left px-4 py-3 font-semibold text-gray-900">
+                        Team
+                      </th>
+                      <th className="text-center px-4 py-3 font-semibold text-gray-900">
+                        Pool
+                      </th>
+                      <th className="text-center px-4 py-3 font-semibold text-gray-900">
+                        Points
+                      </th>
+                      <th className="text-center px-4 py-3 font-semibold text-gray-900">
+                        Set Diff
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Bracket Structure Notes */}
-            <div className="mt-4 p-3 bg-white rounded border border-gray-200 text-sm text-gray-700">
-              <p className="font-medium mb-2">Single Elimination (Best of 3):</p>
-              <p>
-                {bracket.teams.length} teams will compete in {Math.ceil(Math.log2(bracket.teams.length))} rounds.
-              </p>
+                  </thead>
+                  <tbody>
+                    {bracket.teams.map((bracketTeam, index) => (
+                      <tr
+                        key={bracketTeam.team.id}
+                        className={`border-b ${
+                          index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                        }`}
+                      >
+                        <td className="px-4 py-3 font-bold text-lg text-gray-900 w-12">
+                          {bracketTeam.seed}
+                        </td>
+                        <td className="px-4 py-3 text-gray-900">
+                          {bracketTeam.team.name}
+                        </td>
+                        <td className="px-4 py-3 text-center text-gray-700">
+                          {bracketTeam.team.poolId.split("-")[0] ||
+                            bracketTeam.team.poolId}
+                        </td>
+                        <td className="px-4 py-3 text-center font-semibold text-blue-600">
+                          {bracketTeam.standing.fivbPoints}
+                        </td>
+                        <td className="px-4 py-3 text-center text-gray-700">
+                          {bracketTeam.standing.setDifference > 0 ? "+" : ""}
+                          {bracketTeam.standing.setDifference}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         );
       })}
+
+      {/* Bracket Info */}
+      <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
+        <h4 className="font-semibold text-purple-900 mb-2">
+          🎯 Bracket Format:
+        </h4>
+        <ul className="text-sm text-purple-800 space-y-1">
+          <li>• <strong>Semifinals:</strong> Seed 1 vs 4 • Seed 2 vs 3</li>
+          <li>• <strong>Finals:</strong> Winner of Match 1 vs Winner of Match 2</li>
+          <li>• <strong>3rd Place:</strong> Loser of Match 1 vs Loser of Match 2 (optional)</li>
+          <li>• Teams are seeded by FIVB points and set differential from pools</li>
+        </ul>
+      </div>
 
       {/* Export Instructions */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -136,9 +144,9 @@ export default function BracketsView({ tournament }: BracketsViewProps) {
         </h4>
         <ul className="text-sm text-blue-800 space-y-1">
           <li>✓ Review the bracket assignments above</li>
-          <li>✓ Print or screenshot each bracket for the coaches</li>
-          <li>✓ Enter results as teams play their bracket matches</li>
-          <li>✓ Determine champions from each division</li>
+          <li>✓ <strong>Print each bracket</strong> - use browser Print (Ctrl+P / Cmd+P)</li>
+          <li>✓ Fill in match winners by hand during tournament play</li>
+          <li>✓ Use 3rd place match to break ties for final placings</li>
         </ul>
       </div>
     </div>

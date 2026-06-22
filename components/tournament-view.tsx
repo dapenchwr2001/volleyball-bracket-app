@@ -5,13 +5,15 @@ import { Tournament } from "@/lib/types";
 import PoolMatchEntry from "./pool-match-entry";
 import StandingsView from "./standings-view";
 import BracketsView from "./brackets-view";
+import PoolEditor from "./pool-editor";
 
 interface TournamentViewProps {
   tournament: Tournament;
   onBack: () => void;
+  onTournamentUpdate?: (tournament: Tournament) => void;
 }
 
-type ViewMode = "entry" | "standings" | "brackets";
+type ViewMode = "entry" | "standings" | "brackets" | "edit-pools";
 
 export default function TournamentView({
   tournament,
@@ -34,15 +36,25 @@ export default function TournamentView({
               {updatedTournament.name}
             </h2>
             <p className="text-gray-600 mt-1">
-              {updatedTournament.pools.length} pools
+              {updatedTournament.pools.length} pools • {updatedTournament.pools.reduce((sum, p) => sum + p.teams.length, 0)} teams
             </p>
           </div>
-          <button
-            onClick={onBack}
-            className="text-gray-600 hover:text-gray-900 font-medium"
-          >
-            ← Back
-          </button>
+          <div className="flex gap-2">
+            {viewMode !== "entry" && (
+              <button
+                onClick={() => setViewMode("edit-pools")}
+                className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+              >
+                ✎ Edit Pools
+              </button>
+            )}
+            <button
+              onClick={onBack}
+              className="text-gray-600 hover:text-gray-900 font-medium text-sm"
+            >
+              ← New Tournament
+            </button>
+          </div>
         </div>
       </div>
 
@@ -94,6 +106,16 @@ export default function TournamentView({
           )}
           {viewMode === "brackets" && (
             <BracketsView tournament={updatedTournament} />
+          )}
+          {viewMode === "edit-pools" && (
+            <PoolEditor
+              tournament={updatedTournament}
+              onSave={(updated) => {
+                setUpdatedTournament(updated);
+                setViewMode("entry");
+              }}
+              onCancel={() => setViewMode("entry")}
+            />
           )}
         </div>
       </div>

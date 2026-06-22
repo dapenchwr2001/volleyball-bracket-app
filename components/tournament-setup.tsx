@@ -26,6 +26,32 @@ export default function TournamentSetup({
       return;
     }
 
+    // Check for duplicate team names within this pool
+    const teamNamesInPool = currentPoolTeams.map((t) => t.trim().toLowerCase());
+    const duplicatesInPool = teamNamesInPool.filter(
+      (name, index) => teamNamesInPool.indexOf(name) !== index
+    );
+    if (duplicatesInPool.length > 0) {
+      alert(`Duplicate team name in pool: "${duplicatesInPool[0]}"`);
+      return;
+    }
+
+    // Check for duplicate team names globally (across all pools)
+    const allTeamNames = pools.flatMap((p) =>
+      p.teams.map((t) => t.name.toLowerCase())
+    );
+    const duplicatesGlobal = currentPoolTeams.filter(
+      (team) =>
+        team.trim().length > 0 &&
+        allTeamNames.includes(team.trim().toLowerCase())
+    );
+    if (duplicatesGlobal.length > 0) {
+      alert(
+        `Team name already exists in another pool: "${duplicatesGlobal[0]}"\n\nTeam names must be unique across all pools.`
+      );
+      return;
+    }
+
     const newPool: Pool = {
       id: `pool-${Date.now()}`,
       name: currentPoolName,
@@ -80,6 +106,17 @@ export default function TournamentSetup({
 
   return (
     <div className="space-y-8">
+      {/* Info Banner */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <h3 className="font-semibold text-blue-900 mb-2">📋 How It Works:</h3>
+        <ul className="text-sm text-blue-800 space-y-1">
+          <li>✓ Create pools with exactly 4 teams each</li>
+          <li>✓ Each team plays every other team in their pool once</li>
+          <li>✓ Scores use FIVB system: Win 3-0/3-1 = 3 pts, Win 3-2 = 1 pt, Loss = 0 pts</li>
+          <li>✓ Seeding is automatic based on pool standings</li>
+          <li>✓ Brackets have exactly 4 teams (Semifinals → Finals)</li>
+        </ul>
+      </div>
       {/* Tournament Name */}
       <div className="bg-white rounded-lg shadow p-6">
         <label className="block text-sm font-medium text-gray-700 mb-2">

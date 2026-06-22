@@ -50,8 +50,16 @@ export default function PoolMatchEntry({
     matchId: string,
     setIndex: number,
     team: "team1" | "team2",
-    points: number
+    value: string
   ) => {
+    // Validate input: must be integer, no negatives or decimals
+    let points = parseInt(value) || 0;
+
+    // Enforce constraints
+    if (points < 0) points = 0;
+    if (points > 30) points = 30; // Allow deuce scoring (up to 30)
+    if (!Number.isInteger(points)) points = Math.floor(points);
+
     const matchScores = setScores.get(matchId) || [
       { team1Points: 0, team2Points: 0 },
       { team1Points: 0, team2Points: 0 },
@@ -68,7 +76,83 @@ export default function PoolMatchEntry({
     setSetScores(new Map(setScores.set(matchId, updated)));
   };
 
+  // Validate volleyball scoring: winner must have ≥25 points AND lead by ≥2
+  const isValidSet = (team1Points: number, team2Points: number): boolean => {
+    if (team1Points === 0 && team2Points === 0) return true; // Empty set is valid
+
+    const maxPoints = Math.max(team1Points, team2Points);
+    const minPoints = Math.min(team1Points, team2Points);
+    const diff = maxPoints - minPoints;
+
+    // Must have at least 25 points to win
+    if (maxPoints < 25) return false;
+    // Must win by at least 2 points
+    if (diff < 2) return false;
+
+    return true;
+  };
+
+  // Count how many sets each team has won in a match
+  const getSetsWon = (matchId: string): { team1: number; team2: number } => {
+    const scores = setScores.get(matchId) || [];
+    let team1Won = 0;
+    let team2Won = 0;
+
+    scores.forEach(({ team1Points, team2Points }) => {
+      if (team1Points === 0 && team2Points === 0) return; // Skip empty sets
+      if (isValidSet(team1Points, team2Points)) {
+        if (team1Points > team2Points) team1Won++;
+        else if (team2Points > team1Points) team2Won++;
+      }
+    });
+
+    return { team1: team1Won, team2: team2Won };
+  };
+
   const handleSaveMatches = () => {
+    // Validate all matches before saving
+    const errors: string[] = [];
+
+    matches.forEach((match, index) => {
+      const scores = setScores.get(match.id) || [];
+      const team1 = selectedPool.teams[match.team1Index];
+      const team2 = selectedPool.teams[match.team2Index];
+
+      // Check if match is empty (all scores 0)
+      const allEmpty = scores.every((s) => s.team1Points === 0 && s.team2Points === 0);
+      if (allEmpty || scores.length === 0) {
+        errors.push(
+          `Match ${index + 1} (${team1.name} vs ${team2.name}): All scores are empty`
+        );
+        return;
+      }
+
+      // Check if at least one set is completed
+      const hasSets = scores.some(
+        (s) => s.team1Points > 0 || s.team2Points > 0
+      );
+      if (!hasSets) {
+        errors.push(
+          `Match ${index + 1} (${team1.name} vs ${team2.name}): No completed sets`
+        );
+        return;
+      }
+
+      // Check if all filled sets are valid
+      scores.forEach((score, setIdx) => {
+        if ((score.team1Points > 0 || score.team2Points > 0) && !isValidSet(score.team1Points, score.team2Points)) {
+          errors.push(
+            `Match ${index + 1}, Set ${setIdx + 1}: Invalid score (${score.team1Points}-${score.team2Points}). Winner must have ≥25 and lead by ≥2`
+          );
+        }
+      });
+    });
+
+    if (errors.length > 0) {
+      alert("Cannot save matches:\n\n" + errors.join("\n\n"));
+      return;
+    }
+
     const updatedTournament = { ...tournament };
     const updatedPool = { ...selectedPool, matches: [] };
 
@@ -91,7 +175,7 @@ export default function PoolMatchEntry({
     );
 
     onMatchesUpdated(updatedTournament);
-    alert("Matches saved!");
+    alert("✓ Matches saved successfully!");
   };
 
   return (
@@ -143,41 +227,75 @@ export default function PoolMatchEntry({
 
               <div className="space-y-2">
                 {[0, 1, 2].map((setIdx) => (
-                  <div key={setIdx} className="flex gap-2 items-center">
-                    <span className="text-sm text-gray-600 w-12">
-                      Set {setIdx + 1}:
-                    </span>
-                    <input
-                      type="number"
-                      min="0"
-                      value={matchScores[setIdx]?.team1Points || ""}
-                      onChange={(e) =>
-                        handleSetScoreChange(
-                          match.id,
-                          setIdx,
-                          "team1",
-                          parseInt(e.target.value) || 0
-                        )
-                      }
-                      placeholder="0"
-                      className="w-16 px-2 py-1 border border-gray-300 rounded text-center"
-                    />
-                    <span className="text-gray-600">-</span>
-                    <input
-                      type="number"
-                      min="0"
-                      value={matchScores[setIdx]?.team2Points || ""}
-                      onChange={(e) =>
-                        handleSetScoreChange(
-                          match.id,
-                          setIdx,
-                          "team2",
-                          parseInt(e.target.value) || 0
-                        )
-                      }
-                      placeholder="0"
-                      className="w-16 px-2 py-1 border border-gray-300 rounded text-center"
-                    />
+                  <div key={setIdx} className="space-y-1">
+                    <div className="flex gap-2 items-center">
+                      <span className="text-sm text-gray-600 w-12">
+                        Set {setIdx + 1}:
+                      </span>
+                      <input
+                        type="number"
+                        min="0"
+                        max="30"
+                        value={matchScores[setIdx]?.team1Points || ""}
+                        onChange={(e) =>
+                          handleSetScoreChange(
+                            match.id,
+                            setIdx,
+                            "team1",
+                            e.target.value
+                          )
+                        }
+                        placeholder="0"
+                        className="w-16 px-2 py-1 border border-gray-300 rounded text-center"
+                      />
+                      <span className="text-gray-600">-</span>
+                      <input
+                        type="number"
+                        min="0"
+                        max="30"
+                        value={matchScores[setIdx]?.team2Points || ""}
+                        onChange={(e) =>
+                          handleSetScoreChange(
+                            match.id,
+                            setIdx,
+                            "team2",
+                            e.target.value
+                          )
+                        }
+                        placeholder="0"
+                        className="w-16 px-2 py-1 border border-gray-300 rounded text-center"
+                      />
+                      {matchScores[setIdx]?.team1Points !== 0 &&
+                        matchScores[setIdx]?.team2Points !== 0 && (
+                          <span
+                            className={`text-xs font-semibold ${
+                              isValidSet(
+                                matchScores[setIdx].team1Points,
+                                matchScores[setIdx].team2Points
+                              )
+                                ? "text-green-600"
+                                : "text-red-600"
+                            }`}
+                          >
+                            {isValidSet(
+                              matchScores[setIdx].team1Points,
+                              matchScores[setIdx].team2Points
+                            )
+                              ? "✓ Valid"
+                              : "✗ Invalid"}
+                          </span>
+                        )}
+                    </div>
+                    {matchScores[setIdx]?.team1Points !== 0 &&
+                      matchScores[setIdx]?.team2Points !== 0 &&
+                      !isValidSet(
+                        matchScores[setIdx].team1Points,
+                        matchScores[setIdx].team2Points
+                      ) && (
+                        <div className="text-xs text-red-600">
+                          Winner must have ≥25 points and lead by ≥2
+                        </div>
+                      )}
                   </div>
                 ))}
               </div>
