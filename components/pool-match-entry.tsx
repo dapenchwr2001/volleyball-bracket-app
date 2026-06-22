@@ -109,6 +109,63 @@ export default function PoolMatchEntry({
     return { team1: team1Won, team2: team2Won };
   };
 
+  // Generate realistic volleyball scores
+  const generateRandomScore = (): { team1: number; team2: number } => {
+    // Generate random match results
+    // 60% close matches, 40% blowouts
+    const isClose = Math.random() < 0.6;
+
+    if (isClose) {
+      // Close match: 24-26 to 27-25 range
+      const loser = 23 + Math.floor(Math.random() * 4); // 23-26
+      const winner = loser + 2 + Math.floor(Math.random() * 3); // loser+2 to loser+4
+      return Math.random() < 0.5
+        ? { team1: winner, team2: loser }
+        : { team1: loser, team2: winner };
+    } else {
+      // Blowout: winner gets 25+, loser gets less
+      const winner = 25 + Math.floor(Math.random() * 5); // 25-29
+      const loser = Math.floor(Math.random() * 18); // 0-17
+      return Math.random() < 0.5
+        ? { team1: winner, team2: loser }
+        : { team1: loser, team2: winner };
+    }
+  };
+
+  const handleGenerateAllScores = () => {
+    const newScores = new Map(setScores);
+
+    matches.forEach((match) => {
+      const scores: SetScore[] = [];
+
+      // Generate a full match (best of 5)
+      let team1SetsWon = 0;
+      let team2SetsWon = 0;
+
+      for (let setIdx = 0; setIdx < 5; setIdx++) {
+        if (team1SetsWon === 3 || team2SetsWon === 3) {
+          // Match is over, no more sets needed
+          scores.push({ team1Points: 0, team2Points: 0 });
+        } else {
+          const setScore = generateRandomScore();
+          scores.push(setScore);
+
+          // Count set wins
+          if (setScore.team1Points > setScore.team2Points) {
+            team1SetsWon++;
+          } else {
+            team2SetsWon++;
+          }
+        }
+      }
+
+      newScores.set(match.id, scores);
+    });
+
+    setSetScores(newScores);
+    alert("✓ Random scores generated for all matches!");
+  };
+
   const handleSaveMatches = () => {
     // Validate all matches before saving
     const errors: string[] = [];
@@ -203,9 +260,18 @@ export default function PoolMatchEntry({
 
       {/* Matches */}
       <div className="space-y-4">
-        <h3 className="font-semibold text-gray-900">
-          Enter Match Results (Best of 5)
-        </h3>
+        <div className="flex justify-between items-center">
+          <h3 className="font-semibold text-gray-900">
+            Enter Match Results (Best of 5)
+          </h3>
+          <button
+            onClick={handleGenerateAllScores}
+            className="text-xs bg-purple-600 text-white px-3 py-1 rounded hover:bg-purple-700 font-medium"
+            title="Generate random realistic scores for testing"
+          >
+            🎲 Auto-Generate Scores
+          </button>
+        </div>
 
         {matches.map((match, index) => {
           const team1 = selectedPool.teams[match.team1Index];
