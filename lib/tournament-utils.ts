@@ -1,5 +1,4 @@
 import { Tournament, Pool, Team, Match, SetScore } from "./types";
-import { v4 as uuidv4 } from "crypto";
 
 // Simple UUID-like generator (crypto module might not be available in browser)
 function generateId(): string {

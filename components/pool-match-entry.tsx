@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Tournament, SetScore } from "@/lib/types";
+import { Tournament, SetScore, Match } from "@/lib/types";
 
 interface PoolMatchEntryProps {
   tournament: Tournament;
@@ -213,7 +213,7 @@ export default function PoolMatchEntry({
     }
 
     const updatedTournament = { ...tournament };
-    const updatedPool = { ...selectedPool, matches: [] };
+    const updatedPool = { ...selectedPool, matches: [] as Match[] };
 
     matches.forEach((match) => {
       const scores = setScores.get(match.id) || [];
