@@ -110,25 +110,27 @@ export default function PoolMatchEntry({
   };
 
   // Generate realistic volleyball scores
+  // Rule: Game ends when a team reaches 25+ points WITH a 2-point lead
   const generateRandomScore = (): SetScore => {
-    // Generate random match results
-    // 60% close matches, 40% blowouts
-    const isClose = Math.random() < 0.6;
+    // 70% close matches, 30% blowouts
+    const isClose = Math.random() < 0.7;
 
     if (isClose) {
-      // Close match: 24-26 to 27-25 range
-      const loser = 23 + Math.floor(Math.random() * 4); // 23-26
-      const winner = loser + 2 + Math.floor(Math.random() * 3); // loser+2 to loser+4
+      // Close/deuce match: winner wins by EXACTLY 2 points at 25+
+      // Examples: 25-23, 26-24, 27-25, 28-26, 29-27, 30-28
+      const winnerScore = 25 + Math.floor(Math.random() * 4); // 25-28
+      const loserScore = winnerScore - 2; // Always exactly 2 point margin
       return Math.random() < 0.5
-        ? { team1Points: winner, team2Points: loser }
-        : { team1Points: loser, team2Points: winner };
+        ? { team1Points: winnerScore, team2Points: loserScore }
+        : { team1Points: loserScore, team2Points: winnerScore };
     } else {
-      // Blowout: winner gets 25+, loser gets less
-      const winner = 25 + Math.floor(Math.random() * 5); // 25-29
-      const loser = Math.floor(Math.random() * 18); // 0-17
+      // Blowout: winner reaches 25+ quickly, loser stays low (0-18)
+      // Game ends at 25+ with 2+ point lead
+      const winnerScore = 25 + Math.floor(Math.random() * 3); // 25-27
+      const loserScore = Math.floor(Math.random() * 18); // 0-17
       return Math.random() < 0.5
-        ? { team1Points: winner, team2Points: loser }
-        : { team1Points: loser, team2Points: winner };
+        ? { team1Points: winnerScore, team2Points: loserScore }
+        : { team1Points: loserScore, team2Points: winnerScore };
     }
   };
 
