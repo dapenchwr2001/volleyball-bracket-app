@@ -28,7 +28,8 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col relative">
-        {/* Watermark */}
+        {children}
+        {/* Watermark — sits above all content but passes through all clicks */}
         <div
           aria-hidden="true"
           style={{
@@ -38,14 +39,11 @@ export default function RootLayout({
             backgroundRepeat: "no-repeat",
             backgroundPosition: "center center",
             backgroundSize: "cover",
-            opacity: 0.18,
+            opacity: 0.15,
             pointerEvents: "none",
-            zIndex: 0,
+            zIndex: 9999,
           }}
         />
-        <div style={{ position: "relative", zIndex: 1, flex: 1, display: "flex", flexDirection: "column" }}>
-          {children}
-        </div>
       </body>
     </html>
   );
