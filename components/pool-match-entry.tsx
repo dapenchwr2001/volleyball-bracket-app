@@ -110,7 +110,7 @@ export default function PoolMatchEntry({
   };
 
   // Generate realistic volleyball scores
-  const generateRandomScore = (): { team1: number; team2: number } => {
+  const generateRandomScore = (): SetScore => {
     // Generate random match results
     // 60% close matches, 40% blowouts
     const isClose = Math.random() < 0.6;
@@ -120,15 +120,15 @@ export default function PoolMatchEntry({
       const loser = 23 + Math.floor(Math.random() * 4); // 23-26
       const winner = loser + 2 + Math.floor(Math.random() * 3); // loser+2 to loser+4
       return Math.random() < 0.5
-        ? { team1: winner, team2: loser }
-        : { team1: loser, team2: winner };
+        ? { team1Points: winner, team2Points: loser }
+        : { team1Points: loser, team2Points: winner };
     } else {
       // Blowout: winner gets 25+, loser gets less
       const winner = 25 + Math.floor(Math.random() * 5); // 25-29
       const loser = Math.floor(Math.random() * 18); // 0-17
       return Math.random() < 0.5
-        ? { team1: winner, team2: loser }
-        : { team1: loser, team2: winner };
+        ? { team1Points: winner, team2Points: loser }
+        : { team1Points: loser, team2Points: winner };
     }
   };
 
