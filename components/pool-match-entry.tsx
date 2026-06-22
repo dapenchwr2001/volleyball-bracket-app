@@ -250,7 +250,7 @@ export default function PoolMatchEntry({
             setSelectedPoolId(e.target.value);
             setSetScores(new Map());
           }}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900"
         >
           {tournament.pools.map((pool) => (
             <option key={pool.id} value={pool.id}>
@@ -314,7 +314,7 @@ export default function PoolMatchEntry({
                           )
                         }
                         placeholder="0"
-                        className="w-16 px-2 py-1 border border-gray-300 rounded text-center"
+                        className="w-16 px-2 py-1 border border-gray-300 rounded text-center text-gray-900"
                       />
                       <span className="text-gray-600">-</span>
                       <input
@@ -331,7 +331,7 @@ export default function PoolMatchEntry({
                           )
                         }
                         placeholder="0"
-                        className="w-16 px-2 py-1 border border-gray-300 rounded text-center"
+                        className="w-16 px-2 py-1 border border-gray-300 rounded text-center text-gray-900"
                       />
                       {matchScores[setIdx]?.team1Points !== 0 &&
                         matchScores[setIdx]?.team2Points !== 0 && (

@@ -45,7 +45,7 @@ export default function PoolEditor({ tournament, onSave, onCancel }: PoolEditorP
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900"
         />
       </div>
 
@@ -63,7 +63,7 @@ export default function PoolEditor({ tournament, onSave, onCancel }: PoolEditorP
                 type="text"
                 value={pool.name}
                 onChange={(e) => handleUpdatePoolName(poolIdx, e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900"
               />
             </div>
 
@@ -79,7 +79,7 @@ export default function PoolEditor({ tournament, onSave, onCancel }: PoolEditorP
                     onChange={(e) =>
                       handleUpdateTeamName(poolIdx, teamIdx, e.target.value)
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900"
                   />
                 </div>
               ))}

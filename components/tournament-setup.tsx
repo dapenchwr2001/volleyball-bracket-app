@@ -127,7 +127,7 @@ export default function TournamentSetup({
           value={tournamentName}
           onChange={(e) => setTournamentName(e.target.value)}
           placeholder="e.g., Spring 17U Championship"
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
         />
       </div>
 
@@ -146,7 +146,7 @@ export default function TournamentSetup({
               value={currentPoolName}
               onChange={(e) => setCurrentPoolName(e.target.value)}
               placeholder="e.g., Pool A"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
             />
           </div>
 
@@ -162,7 +162,7 @@ export default function TournamentSetup({
                   value={teamName}
                   onChange={(e) => updateTeamName(index, e.target.value)}
                   placeholder={`Team ${index + 1}`}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                 />
               ))}
             </div>
