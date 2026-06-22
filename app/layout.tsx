@@ -37,8 +37,8 @@ export default function RootLayout({
             backgroundImage: "url('/watermark.jpg')",
             backgroundRepeat: "no-repeat",
             backgroundPosition: "center center",
-            backgroundSize: "85vmax",
-            opacity: 0.08,
+            backgroundSize: "cover",
+            opacity: 0.18,
             pointerEvents: "none",
             zIndex: 0,
           }}
