@@ -142,61 +142,23 @@ export function createBracket(
   };
 }
 
-// Main function to generate all brackets with smart distribution
+// Main function to generate all brackets based on pool placement
 export function generateAllBrackets(
   poolStandings: Map<string, TeamStanding[]>
 ): Map<BracketDivision, Bracket> {
-  // Collect all teams and sort globally
-  const allTeams: BracketTeam[] = [];
+  // Assign teams to brackets based on their pool placement
+  const unassignedBrackets = assignToBrackets(poolStandings);
 
-  poolStandings.forEach((standings) => {
-    standings.forEach((standing) => {
-      allTeams.push({
-        seed: 0,
-        team: standing.team,
-        standing: standing,
-      });
-    });
-  });
+  // Re-seed teams within each bracket by FIVB points
+  const reseedBracket = reseedBrackets(unassignedBrackets);
 
-  allTeams.sort((a, b) => {
-    if (a.standing.fivbPoints !== b.standing.fivbPoints) {
-      return b.standing.fivbPoints - a.standing.fivbPoints;
-    }
-    return b.standing.setDifference - a.standing.setDifference;
-  });
-
-  // Determine number of brackets needed (4 teams per bracket)
-  const teamCount = allTeams.length;
-  const bracketCount = Math.ceil(teamCount / 4);
-
-  const availableDivisions: BracketDivision[] = [
-    "Gold",
-    "Silver",
-    "Bronze",
-    "Iron",
-    "Wood",
-  ];
-
-  // Create brackets and distribute teams round-robin
   const brackets = new Map<BracketDivision, Bracket>();
 
-  for (let divIndex = 0; divIndex < bracketCount; divIndex++) {
-    const division = availableDivisions[divIndex] || "Wood";
-    const bracketTeams: BracketTeam[] = [];
-
-    // Distribute teams round-robin across brackets
-    for (let teamIndex = divIndex; teamIndex < allTeams.length; teamIndex += bracketCount) {
-      bracketTeams.push(allTeams[teamIndex]);
+  reseedBracket.forEach((teams, division) => {
+    if (teams.length > 0) {
+      brackets.set(division, createBracket(division, teams));
     }
-
-    // Assign seeds within bracket
-    bracketTeams.forEach((team, index) => {
-      team.seed = index + 1;
-    });
-
-    brackets.set(division, createBracket(division, bracketTeams));
-  }
+  });
 
   return brackets;
 }
