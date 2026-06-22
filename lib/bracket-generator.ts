@@ -7,43 +7,38 @@ import {
   Pool,
 } from "./types";
 
-// Assign teams to brackets with exactly 4 teams per division
+// Assign teams to brackets based on pool placement (1st→Gold, 2nd/3rd→Silver, 4th→Bronze)
 export function assignToBrackets(
   poolStandings: Map<string, TeamStanding[]>
 ): Map<BracketDivision, BracketTeam[]> {
-  // Collect all teams and sort by FIVB points globally
-  const allTeams: BracketTeam[] = [];
-
-  poolStandings.forEach((standings) => {
-    standings.forEach((standing) => {
-      allTeams.push({
-        seed: 0, // Will be re-seeded
-        team: standing.team,
-        standing: standing,
-      });
-    });
-  });
-
-  // Sort by FIVB points (descending), then by set difference
-  allTeams.sort((a, b) => {
-    if (a.standing.fivbPoints !== b.standing.fivbPoints) {
-      return b.standing.fivbPoints - a.standing.fivbPoints;
-    }
-    return b.standing.setDifference - a.standing.setDifference;
-  });
-
-  // Distribute teams round-robin across brackets (4 teams per bracket)
   const brackets = new Map<BracketDivision, BracketTeam[]>([
     ["Gold", []],
     ["Silver", []],
     ["Bronze", []],
   ]);
 
-  const divisions: BracketDivision[] = ["Gold", "Silver", "Bronze"];
+  // Iterate through each pool's standings and assign by placement
+  poolStandings.forEach((standings) => {
+    standings.forEach((standing, placement) => {
+      const bracketTeam: BracketTeam = {
+        seed: 0, // Will be re-seeded
+        team: standing.team,
+        standing: standing,
+      };
 
-  allTeams.forEach((team, index) => {
-    const divisionIndex = index % 3;
-    brackets.get(divisions[divisionIndex])!.push(team);
+      // 1st place (index 0) → Gold
+      if (placement === 0) {
+        brackets.get("Gold")!.push(bracketTeam);
+      }
+      // 2nd & 3rd place (index 1 & 2) → Silver
+      else if (placement === 1 || placement === 2) {
+        brackets.get("Silver")!.push(bracketTeam);
+      }
+      // 4th place (index 3) → Bronze
+      else if (placement === 3) {
+        brackets.get("Bronze")!.push(bracketTeam);
+      }
+    });
   });
 
   return brackets;
