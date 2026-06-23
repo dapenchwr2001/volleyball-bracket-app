@@ -27,43 +27,23 @@ export default function Home() {
   useEffect(() => {
     const saved = localStorage.getItem("volleyball_tournament");
     if (saved) {
-      try {
-        setTournament(JSON.parse(saved));
-      } catch (e) {
-        console.error("Failed to load saved tournament:", e);
-      }
+      try { setTournament(JSON.parse(saved)); } catch (e) { console.error(e); }
     }
     setIsLoading(false);
   }, []);
 
   useEffect(() => {
-    if (tournament) {
-      localStorage.setItem("volleyball_tournament", JSON.stringify(tournament));
-    }
+    if (tournament) localStorage.setItem("volleyball_tournament", JSON.stringify(tournament));
   }, [tournament]);
 
   const handleSaveToHistory = () => {
     if (!tournament) return;
     const key = historyKey(session?.user?.email);
     const existing: SavedTournament[] = JSON.parse(localStorage.getItem(key) || "[]");
-    const entry: SavedTournament = {
-      id: `${Date.now()}`,
-      savedAt: new Date().toISOString(),
-      data: tournament,
-    };
+    const entry: SavedTournament = { id: `${Date.now()}`, savedAt: new Date().toISOString(), data: tournament };
     localStorage.setItem(key, JSON.stringify([entry, ...existing].slice(0, 30)));
     setSavedFeedback(true);
     setTimeout(() => setSavedFeedback(false), 2500);
-  };
-
-  const handleTournamentCreated = (newTournament: Tournament) => {
-    setTournament(newTournament);
-  };
-
-  const handleBack = () => {
-    if (window.confirm("Start a new tournament? Your current data will remain saved.")) {
-      setTournament(null);
-    }
   };
 
   if (isLoading) {
@@ -77,63 +57,70 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <header className="bg-white shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-start gap-4">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3">
+          {/* Top row: brand + auth */}
+          <div className="flex justify-between items-center gap-3">
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight">
                 🏐 Volleyball Bracketeer
               </h1>
-              <p className="text-gray-600 mt-0.5 text-sm">
+              <p className="text-gray-500 text-xs hidden sm:block mt-0.5">
                 Automatic seeding and bracket creation for 17U tournaments
               </p>
             </div>
+            <AuthButton />
+          </div>
 
-            {/* Right side controls */}
-            <div className="flex flex-col items-end gap-2 shrink-0">
-              <AuthButton />
-              <div className="flex items-center gap-3 text-sm">
-                <Link
-                  href="/history"
-                  className="text-blue-600 hover:text-blue-800 font-medium"
+          {/* Bottom row: nav actions */}
+          <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-100">
+            <Link
+              href="/history"
+              className="flex items-center gap-1 text-xs sm:text-sm text-blue-600 hover:text-blue-800 font-medium"
+            >
+              📋 <span className="hidden xs:inline">My </span>History
+            </Link>
+            {tournament && (
+              <>
+                <span className="text-gray-300">|</span>
+                <button
+                  onClick={handleSaveToHistory}
+                  className={`text-xs sm:text-sm font-semibold px-3 py-1 rounded-full transition-all ${
+                    savedFeedback
+                      ? "bg-green-100 text-green-700"
+                      : "bg-indigo-600 text-white hover:bg-indigo-700"
+                  }`}
                 >
-                  📋 My History
-                </Link>
-                {tournament && (
-                  <>
-                    <button
-                      onClick={handleSaveToHistory}
-                      className={`font-medium transition-colors ${
-                        savedFeedback
-                          ? "text-green-600"
-                          : "text-indigo-600 hover:text-indigo-800"
-                      }`}
-                    >
-                      {savedFeedback ? "✓ Saved!" : "💾 Save"}
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (window.confirm("Clear all data and start fresh?")) {
-                          localStorage.removeItem("volleyball_tournament");
-                          setTournament(null);
-                        }
-                      }}
-                      className="text-red-500 hover:text-red-700 font-medium"
-                    >
-                      Reset
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
+                  {savedFeedback ? "✓ Saved!" : "💾 Save"}
+                </button>
+                <button
+                  onClick={() => {
+                    if (window.confirm("Clear all data and start fresh?")) {
+                      localStorage.removeItem("volleyball_tournament");
+                      setTournament(null);
+                    }
+                  }}
+                  className="text-xs sm:text-sm text-red-500 hover:text-red-700 font-medium ml-1"
+                >
+                  Reset
+                </button>
+              </>
+            )}
           </div>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
         {!tournament ? (
-          <TournamentSetup onTournamentCreated={handleTournamentCreated} />
+          <TournamentSetup onTournamentCreated={(t) => setTournament(t)} />
         ) : (
-          <TournamentView tournament={tournament} onBack={handleBack} />
+          <TournamentView
+            tournament={tournament}
+            onBack={() => {
+              if (window.confirm("Start a new tournament? Your current data will remain saved.")) {
+                setTournament(null);
+              }
+            }}
+          />
         )}
       </main>
     </div>

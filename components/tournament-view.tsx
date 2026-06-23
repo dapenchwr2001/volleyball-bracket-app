@@ -10,110 +10,96 @@ import PoolEditor from "./pool-editor";
 interface TournamentViewProps {
   tournament: Tournament;
   onBack: () => void;
-  onTournamentUpdate?: (tournament: Tournament) => void;
 }
 
 type ViewMode = "entry" | "standings" | "brackets" | "edit-pools";
 
-export default function TournamentView({
-  tournament,
-  onBack,
-}: TournamentViewProps) {
+const TABS: { id: ViewMode; label: string; short: string }[] = [
+  { id: "entry",     label: "Match Entry", short: "Entry"     },
+  { id: "standings", label: "Standings",   short: "Standings" },
+  { id: "brackets",  label: "Brackets",    short: "Brackets"  },
+];
+
+export default function TournamentView({ tournament, onBack }: TournamentViewProps) {
   const [viewMode, setViewMode] = useState<ViewMode>("entry");
   const [updatedTournament, setUpdatedTournament] = useState(tournament);
 
-  const handleMatchesUpdated = (updatedTourney: Tournament) => {
-    setUpdatedTournament(updatedTourney);
-  };
+  const poolsWithMatches = updatedTournament.pools.filter((p) => p.matches.length > 0).length;
+  const totalPools = updatedTournament.pools.length;
+  const allDone = poolsWithMatches === totalPools;
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex justify-between items-start">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">
+    <div className="space-y-4">
+      {/* Tournament header card */}
+      <div className="bg-white rounded-lg shadow px-4 py-4 sm:px-6">
+        <div className="flex justify-between items-start gap-3">
+          <div className="min-w-0">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
               {updatedTournament.name}
             </h2>
-            <p className="text-gray-600 mt-1">
-              {updatedTournament.pools.length} pools • {updatedTournament.pools.reduce((sum, p) => sum + p.teams.length, 0)} teams
+            <p className="text-gray-500 text-sm mt-0.5">
+              {totalPools} pool{totalPools !== 1 ? "s" : ""} · {updatedTournament.pools.reduce((s, p) => s + p.teams.length, 0)} teams
             </p>
           </div>
-          <div className="flex gap-2">
-            {viewMode !== "entry" && (
-              <button
-                onClick={() => setViewMode("edit-pools")}
-                className="text-blue-600 hover:text-blue-800 font-medium text-sm"
-              >
-                ✎ Edit Pools
-              </button>
-            )}
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => setViewMode("edit-pools")}
+              className="flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1.5 rounded-lg font-medium transition"
+            >
+              ✎ Edit Pools
+            </button>
             <button
               onClick={onBack}
-              className="text-gray-600 hover:text-gray-900 font-medium text-sm"
+              className="text-xs text-gray-500 hover:text-gray-800 font-medium px-2.5 py-1.5 rounded-lg hover:bg-gray-100 transition"
             >
-              ← New Tournament
+              ← New
             </button>
           </div>
         </div>
+
+        {/* Progress bar */}
+        <div className="mt-3 flex items-center gap-2">
+          <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-blue-500 rounded-full transition-all"
+              style={{ width: `${totalPools > 0 ? (poolsWithMatches / totalPools) * 100 : 0}%` }}
+            />
+          </div>
+          <span className="text-xs text-gray-500 shrink-0">
+            {allDone ? "✓ All pools scored" : `${poolsWithMatches}/${totalPools} pools scored`}
+          </span>
+        </div>
       </div>
 
-      {/* Navigation Tabs */}
+      {/* Tabs + content */}
       <div className="bg-white rounded-lg shadow">
-        <div className="flex flex-wrap border-b">
-          <button
-            onClick={() => setViewMode("entry")}
-            className={`flex-1 px-4 py-3 font-medium text-center ${
-              viewMode === "entry"
-                ? "border-b-2 border-blue-600 text-blue-600"
-                : "text-gray-600 hover:text-gray-900"
-            }`}
-          >
-            Match Entry
-          </button>
-          <button
-            onClick={() => setViewMode("standings")}
-            className={`flex-1 px-4 py-3 font-medium text-center ${
-              viewMode === "standings"
-                ? "border-b-2 border-blue-600 text-blue-600"
-                : "text-gray-600 hover:text-gray-900"
-            }`}
-          >
-            Standings
-          </button>
-          <button
-            onClick={() => setViewMode("brackets")}
-            className={`flex-1 px-4 py-3 font-medium text-center ${
-              viewMode === "brackets"
-                ? "border-b-2 border-blue-600 text-blue-600"
-                : "text-gray-600 hover:text-gray-900"
-            }`}
-          >
-            Brackets
-          </button>
+        <div className="flex border-b overflow-x-auto">
+          {TABS.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setViewMode(tab.id)}
+              className={`flex-1 px-3 py-3 text-sm font-medium whitespace-nowrap transition-colors ${
+                viewMode === tab.id
+                  ? "border-b-2 border-blue-600 text-blue-600"
+                  : "text-gray-500 hover:text-gray-800"
+              }`}
+            >
+              <span className="sm:hidden">{tab.short}</span>
+              <span className="hidden sm:inline">{tab.label}</span>
+            </button>
+          ))}
         </div>
 
-        {/* Content */}
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           {viewMode === "entry" && (
-            <PoolMatchEntry
-              tournament={updatedTournament}
-              onMatchesUpdated={handleMatchesUpdated}
-            />
+            <PoolMatchEntry tournament={updatedTournament} onMatchesUpdated={setUpdatedTournament} />
           )}
-          {viewMode === "standings" && (
-            <StandingsView tournament={updatedTournament} />
-          )}
-          {viewMode === "brackets" && (
-            <BracketsView tournament={updatedTournament} />
-          )}
+          {viewMode === "standings" && <StandingsView tournament={updatedTournament} />}
+          {viewMode === "brackets" && <BracketsView tournament={updatedTournament} />}
           {viewMode === "edit-pools" && (
             <PoolEditor
               tournament={updatedTournament}
-              onSave={(updated) => {
-                setUpdatedTournament(updated);
-                setViewMode("entry");
-              }}
+              onSave={(updated) => { setUpdatedTournament(updated); setViewMode("entry"); }}
               onCancel={() => setViewMode("entry")}
             />
           )}

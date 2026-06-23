@@ -42,6 +42,7 @@ export default function BracketsView({ tournament }: BracketsViewProps) {
 
   const poolStandings = getAllPoolStandings(tournament.pools);
   const brackets = generateAllBrackets(poolStandings);
+  const poolNameById = new Map(tournament.pools.map((p) => [p.id, p.name]));
 
   const activeDivisions: BracketDivision[] = [
     "Gold",
@@ -104,8 +105,7 @@ export default function BracketsView({ tournament }: BracketsViewProps) {
                           {bracketTeam.team.name}
                         </td>
                         <td className="px-4 py-3 text-center text-gray-700">
-                          {bracketTeam.team.poolId.split("-")[0] ||
-                            bracketTeam.team.poolId}
+                          {poolNameById.get(bracketTeam.team.poolId) ?? bracketTeam.team.poolId}
                         </td>
                         <td className="px-4 py-3 text-center font-semibold text-blue-600">
                           {bracketTeam.standing.fivbPoints}
@@ -137,16 +137,22 @@ export default function BracketsView({ tournament }: BracketsViewProps) {
         </ul>
       </div>
 
-      {/* Export Instructions */}
+      {/* Print + Next Steps */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h4 className="font-semibold text-blue-900 mb-2">
-          📋 Next Steps:
-        </h4>
+        <div className="flex justify-between items-start gap-4 mb-3">
+          <h4 className="font-semibold text-blue-900">📋 Next Steps:</h4>
+          <button
+            onClick={() => window.print()}
+            className="flex items-center gap-1.5 bg-blue-600 text-white text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-blue-700 transition shrink-0"
+          >
+            🖨️ Print Brackets
+          </button>
+        </div>
         <ul className="text-sm text-blue-800 space-y-1">
-          <li>✓ Review the bracket assignments above</li>
-          <li>✓ <strong>Print each bracket</strong> - use browser Print (Ctrl+P / Cmd+P)</li>
-          <li>✓ Fill in match winners by hand during tournament play</li>
-          <li>✓ Use 3rd place match to break ties for final placings</li>
+          <li>✓ Review bracket assignments above</li>
+          <li>✓ Hit <strong>Print Brackets</strong> to print for the tournament</li>
+          <li>✓ Fill in match winners by hand during play</li>
+          <li>✓ Use 3rd place match to settle final standings</li>
         </ul>
       </div>
     </div>

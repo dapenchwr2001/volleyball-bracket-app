@@ -14,6 +14,7 @@ export default function TournamentSetup({
   const [pools, setPools] = useState<Pool[]>([]);
   const [currentPoolName, setCurrentPoolName] = useState("");
   const [currentPoolTeams, setCurrentPoolTeams] = useState<string[]>(["", "", "", ""]);
+  const [showHowItWorks, setShowHowItWorks] = useState(false);
 
   const addPool = () => {
     if (!currentPoolName.trim()) {
@@ -106,16 +107,24 @@ export default function TournamentSetup({
 
   return (
     <div className="space-y-8">
-      {/* Info Banner */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="font-semibold text-blue-900 mb-2">📋 How It Works:</h3>
-        <ul className="text-sm text-blue-800 space-y-1">
-          <li>✓ Create pools with exactly 4 teams each</li>
-          <li>✓ Each team plays every other team in their pool once</li>
-          <li>✓ Scores use FIVB system: Win 3-0/3-1 = 3 pts, Win 3-2 = 1 pt, Loss = 0 pts</li>
-          <li>✓ Seeding is automatic based on pool standings</li>
-          <li>✓ Brackets have exactly 4 teams (Semifinals → Finals)</li>
-        </ul>
+      {/* Collapsible How It Works */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg overflow-hidden">
+        <button
+          onClick={() => setShowHowItWorks((v) => !v)}
+          className="w-full flex justify-between items-center px-4 py-3 text-left"
+        >
+          <span className="font-semibold text-blue-900">📋 How It Works</span>
+          <span className="text-blue-600 text-sm">{showHowItWorks ? "▲ Hide" : "▼ Show"}</span>
+        </button>
+        {showHowItWorks && (
+          <ul className="text-sm text-blue-800 space-y-1 px-4 pb-4">
+            <li>✓ Create pools with exactly 4 teams each</li>
+            <li>✓ Each team plays every other team in their pool once</li>
+            <li>✓ Scores use FIVB system: Win 3-0/3-1 = 3 pts, Win 3-2 = 1 pt, Loss = 0 pts</li>
+            <li>✓ Seeding is automatic based on pool standings</li>
+            <li>✓ 1st place → Gold · 2nd/3rd → Silver · 4th → Bronze</li>
+          </ul>
+        )}
       </div>
       {/* Tournament Name */}
       <div className="bg-white rounded-lg shadow p-6">

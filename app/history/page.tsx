@@ -67,7 +67,7 @@ export default function HistoryPage() {
 
         {history.length === 0 ? (
           <div className="bg-white rounded-lg shadow p-10 text-center">
-            <p className="text-2xl mb-2">🏐</p>
+            <p className="text-4xl mb-3">🏐</p>
             <p className="text-gray-600 font-medium">No saved tournaments yet.</p>
             <p className="text-sm text-gray-400 mt-1">
               Create a tournament and hit <strong>Save to History</strong> to archive it here.

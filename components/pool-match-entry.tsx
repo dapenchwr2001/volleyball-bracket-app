@@ -252,11 +252,14 @@ export default function PoolMatchEntry({
           }}
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900"
         >
-          {tournament.pools.map((pool) => (
-            <option key={pool.id} value={pool.id}>
-              {pool.name}
-            </option>
-          ))}
+          {tournament.pools.map((pool) => {
+            const hasScores = pool.matches.length > 0;
+            return (
+              <option key={pool.id} value={pool.id}>
+                {hasScores ? "✓ " : ""}{pool.name}
+              </option>
+            );
+          })}
         </select>
       </div>
 
@@ -313,7 +316,7 @@ export default function PoolMatchEntry({
                             e.target.value
                           )
                         }
-                        placeholder="0"
+                        placeholder="—"
                         className="w-16 px-2 py-1 border border-gray-300 rounded text-center text-gray-900"
                       />
                       <span className="text-gray-600">-</span>
@@ -330,7 +333,7 @@ export default function PoolMatchEntry({
                             e.target.value
                           )
                         }
-                        placeholder="0"
+                        placeholder="—"
                         className="w-16 px-2 py-1 border border-gray-300 rounded text-center text-gray-900"
                       />
                       {matchScores[setIdx]?.team1Points !== 0 &&
