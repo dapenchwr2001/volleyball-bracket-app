@@ -1,41 +1,104 @@
 "use client";
+
+import { useState, useRef, useEffect } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
 import Image from "next/image";
+import Link from "next/link";
+import { loadProfile, CoachProfile } from "@/lib/profile";
 
-export default function AuthButton() {
+interface AuthButtonProps {
+  profile?: CoachProfile | null;
+}
+
+export default function AuthButton({ profile }: AuthButtonProps) {
   const { data: session, status } = useSession();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   if (status === "loading") {
     return <div className="h-9 w-24 bg-gray-100 animate-pulse rounded-lg" />;
   }
 
   if (session?.user) {
+    const displayName = profile?.name || session.user.name || "";
+    const club = profile?.club || "";
+    const role = profile?.role || "";
+
     return (
-      <div className="flex items-center gap-2">
-        {session.user.image && (
-          <Image
-            src={session.user.image}
-            alt=""
-            width={32}
-            height={32}
-            className="rounded-full border-2 border-white shadow"
-          />
-        )}
-        <div className="hidden sm:block text-right">
-          <p className="text-xs font-semibold text-gray-900 leading-tight">{session.user.name}</p>
-          <button
-            onClick={() => signOut()}
-            className="text-xs text-gray-500 hover:text-red-600 transition-colors"
-          >
-            Sign out
-          </button>
-        </div>
+      <div className="relative" ref={ref}>
         <button
-          onClick={() => signOut()}
-          className="sm:hidden text-xs text-gray-500 hover:text-red-600"
+          onClick={() => setOpen((v) => !v)}
+          className="flex items-center gap-2 hover:opacity-80 transition"
+          aria-label="Profile menu"
         >
-          Sign out
+          {session.user.image ? (
+            <Image
+              src={session.user.image}
+              alt=""
+              width={36}
+              height={36}
+              className="rounded-full border-2 border-white shadow"
+            />
+          ) : (
+            <div className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow">
+              {displayName.charAt(0).toUpperCase()}
+            </div>
+          )}
+          <div className="hidden sm:block text-left">
+            <p className="text-xs font-semibold text-gray-900 leading-tight">{displayName}</p>
+            {club && <p className="text-xs text-gray-500 leading-tight truncate max-w-[120px]">{club}</p>}
+          </div>
+          <svg className="w-3.5 h-3.5 text-gray-400 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
         </button>
+
+        {open && (
+          <div className="absolute right-0 mt-2 w-60 bg-white rounded-xl shadow-lg border border-gray-100 z-50 overflow-hidden">
+            {/* Profile summary */}
+            <div className="px-4 py-3 bg-gray-50 border-b border-gray-100">
+              <p className="font-semibold text-gray-900 text-sm truncate">{displayName}</p>
+              {role && <p className="text-xs text-gray-500">{role}{club ? ` · ${club}` : ""}</p>}
+              <p className="text-xs text-gray-400 truncate mt-0.5">{session.user.email}</p>
+            </div>
+
+            {/* Links */}
+            <div className="py-1">
+              <Link
+                href="/profile"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition"
+              >
+                <span>✏️</span> Edit Profile
+              </Link>
+              <Link
+                href="/history"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition"
+              >
+                <span>📋</span> My History
+              </Link>
+            </div>
+
+            <div className="border-t border-gray-100 py-1">
+              <button
+                onClick={() => { setOpen(false); signOut(); }}
+                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition text-left"
+              >
+                <span>🚪</span> Sign out
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     );
   }

@@ -6,7 +6,9 @@ import Link from "next/link";
 import TournamentSetup from "@/components/tournament-setup";
 import TournamentView from "@/components/tournament-view";
 import AuthButton from "@/components/auth-button";
+import ProfileSetupModal from "@/components/profile-setup-modal";
 import { Tournament } from "@/lib/types";
+import { CoachProfile, loadProfile } from "@/lib/profile";
 
 interface SavedTournament {
   id: string;
@@ -23,7 +25,10 @@ export default function Home() {
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [savedFeedback, setSavedFeedback] = useState(false);
+  const [profile, setProfile] = useState<CoachProfile | null>(null);
+  const [showProfileSetup, setShowProfileSetup] = useState(false);
 
+  // Load tournament from localStorage
   useEffect(() => {
     const saved = localStorage.getItem("volleyball_tournament");
     if (saved) {
@@ -32,9 +37,22 @@ export default function Home() {
     setIsLoading(false);
   }, []);
 
+  // Persist tournament to localStorage
   useEffect(() => {
     if (tournament) localStorage.setItem("volleyball_tournament", JSON.stringify(tournament));
   }, [tournament]);
+
+  // Load or prompt profile setup when session arrives
+  useEffect(() => {
+    if (!session?.user?.email) return;
+    const existing = loadProfile(session.user.email);
+    if (existing) {
+      setProfile(existing);
+    } else {
+      // First login — show setup modal
+      setShowProfileSetup(true);
+    }
+  }, [session?.user?.email]);
 
   const handleSaveToHistory = () => {
     if (!tournament) return;
@@ -56,6 +74,15 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      {/* Profile setup modal — first login only */}
+      {showProfileSetup && session?.user?.email && (
+        <ProfileSetupModal
+          email={session.user.email}
+          googleName={session.user.name || ""}
+          onComplete={(p) => { setProfile(p); setShowProfileSetup(false); }}
+        />
+      )}
+
       <header className="bg-white shadow-sm">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3">
           {/* Top row: brand + auth */}
@@ -68,7 +95,7 @@ export default function Home() {
                 Automatic seeding and bracket creation for 17U tournaments
               </p>
             </div>
-            <AuthButton />
+            <AuthButton profile={profile} />
           </div>
 
           {/* Bottom row: nav actions */}
@@ -111,7 +138,10 @@ export default function Home() {
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
         {!tournament ? (
-          <TournamentSetup onTournamentCreated={(t) => setTournament(t)} />
+          <TournamentSetup
+            onTournamentCreated={(t) => setTournament(t)}
+            defaultOVRDivision={profile?.defaultOVRDivision || ""}
+          />
         ) : (
           <TournamentView
             tournament={tournament}

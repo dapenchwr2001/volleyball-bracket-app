@@ -13,6 +13,7 @@ interface OVRTeam {
 
 interface TournamentSetupProps {
   onTournamentCreated: (tournament: Tournament) => void;
+  defaultOVRDivision?: string;
 }
 
 const OVR_DIVISIONS = [
@@ -60,7 +61,7 @@ function snakeSeed(teams: OVRTeam[], numPools: number): OVRTeam[][] {
   return pools;
 }
 
-export default function TournamentSetup({ onTournamentCreated }: TournamentSetupProps) {
+export default function TournamentSetup({ onTournamentCreated, defaultOVRDivision = "" }: TournamentSetupProps) {
   const [tournamentName, setTournamentName] = useState("");
   const [pools, setPools] = useState<Pool[]>([]);
   const [currentPoolName, setCurrentPoolName] = useState("");
@@ -69,7 +70,7 @@ export default function TournamentSetup({ onTournamentCreated }: TournamentSetup
 
   // OVR import state
   const [showOVR, setShowOVR] = useState(false);
-  const [ovrDiv, setOvrDiv] = useState("G17N");
+  const [ovrDiv, setOvrDiv] = useState(defaultOVRDivision || "G17N");
   const [ovrLoading, setOvrLoading] = useState(false);
   const [ovrError, setOvrError] = useState("");
   const [ovrTeams, setOvrTeams] = useState<OVRTeam[]>([]);
