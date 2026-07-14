@@ -4,6 +4,7 @@ import { Tournament, BracketDivision } from "@/lib/types";
 import { getAllPoolStandings } from "@/lib/seeding";
 import { generateAllBrackets } from "@/lib/bracket-generator";
 import BracketVisualization from "./bracket-visualization";
+import PrintBracketSheet from "./print-bracket-sheet";
 
 interface BracketsViewProps {
   tournament: Tournament;
@@ -143,17 +144,54 @@ export default function BracketsView({ tournament }: BracketsViewProps) {
           <h4 className="font-semibold text-blue-900">📋 Next Steps:</h4>
           <button
             onClick={() => window.print()}
-            className="flex items-center gap-1.5 bg-blue-600 text-white text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-blue-700 transition shrink-0"
+            className="flex items-center gap-1.5 bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-blue-700 active:scale-95 transition shadow-sm shrink-0"
           >
             🖨️ Print Brackets
           </button>
         </div>
         <ul className="text-sm text-blue-800 space-y-1">
           <li>✓ Review bracket assignments above</li>
-          <li>✓ Hit <strong>Print Brackets</strong> to print for the tournament</li>
-          <li>✓ Fill in match winners by hand during play</li>
+          <li>✓ Hit <strong>Print Brackets</strong> — each division prints on its own page</li>
+          <li>✓ Fill in scores by hand during play · Circle the winner</li>
           <li>✓ Use 3rd place match to settle final standings</li>
         </ul>
+      </div>
+
+      {/* ── PRINT-ONLY BRACKET SHEETS ──────────────────────────────────────
+          Hidden on screen. Shown only when window.print() is called.
+          @media print CSS hides all other content and shows only this div.
+      ────────────────────────────────────────────────────────────────────── */}
+      <style>{`
+        @media print {
+          @page { margin: 0.45in; size: letter; }
+          body * { visibility: hidden !important; }
+          #vb-print-brackets { display: block !important; }
+          #vb-print-brackets,
+          #vb-print-brackets * { visibility: visible !important; }
+          #vb-print-brackets {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            background: white !important;
+          }
+        }
+      `}</style>
+
+      <div id="vb-print-brackets" style={{ display: "none" }}>
+        {activeDivisions
+          .map((div) => ({ div, bracket: brackets.get(div) }))
+          .filter(({ bracket }) => bracket && bracket.teams.length > 0)
+          .map(({ div, bracket }, idx, arr) => (
+            <PrintBracketSheet
+              key={div}
+              tournamentName={tournament.name}
+              division={div}
+              teams={bracket!.teams}
+              poolNameById={poolNameById}
+              isLast={idx === arr.length - 1}
+            />
+          ))}
       </div>
     </div>
   );
