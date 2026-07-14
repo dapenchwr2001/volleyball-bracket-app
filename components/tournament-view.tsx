@@ -6,23 +6,31 @@ import PoolMatchEntry from "./pool-match-entry";
 import StandingsView from "./standings-view";
 import BracketsView from "./brackets-view";
 import PoolEditor from "./pool-editor";
+import ScheduleView from "./schedule-view";
 
 interface TournamentViewProps {
   tournament: Tournament;
   onBack: () => void;
+  onTournamentUpdated?: (t: Tournament) => void;
 }
 
-type ViewMode = "entry" | "standings" | "brackets" | "edit-pools";
+type ViewMode = "entry" | "standings" | "brackets" | "schedule" | "edit-pools";
 
 const TABS: { id: ViewMode; label: string; short: string }[] = [
-  { id: "entry",     label: "Match Entry", short: "Entry"     },
-  { id: "standings", label: "Standings",   short: "Standings" },
-  { id: "brackets",  label: "Brackets",    short: "Brackets"  },
+  { id: "entry",     label: "Match Entry", short: "Entry"    },
+  { id: "standings", label: "Standings",   short: "Stndgs"  },
+  { id: "brackets",  label: "Brackets",    short: "Brkts"   },
+  { id: "schedule",  label: "Schedule",    short: "Sched"   },
 ];
 
-export default function TournamentView({ tournament, onBack }: TournamentViewProps) {
+export default function TournamentView({ tournament, onBack, onTournamentUpdated }: TournamentViewProps) {
   const [viewMode, setViewMode] = useState<ViewMode>("entry");
   const [updatedTournament, setUpdatedTournament] = useState(tournament);
+
+  const handleTournamentUpdate = (t: Tournament) => {
+    setUpdatedTournament(t);
+    onTournamentUpdated?.(t);
+  };
 
   const poolsWithMatches = updatedTournament.pools.filter((p) => p.matches.length > 0).length;
   const totalPools = updatedTournament.pools.length;
@@ -96,6 +104,9 @@ export default function TournamentView({ tournament, onBack }: TournamentViewPro
           )}
           {viewMode === "standings" && <StandingsView tournament={updatedTournament} />}
           {viewMode === "brackets" && <BracketsView tournament={updatedTournament} />}
+          {viewMode === "schedule" && (
+            <ScheduleView tournament={updatedTournament} onScheduleUpdated={handleTournamentUpdate} />
+          )}
           {viewMode === "edit-pools" && (
             <PoolEditor
               tournament={updatedTournament}

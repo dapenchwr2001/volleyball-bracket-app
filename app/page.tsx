@@ -150,6 +150,7 @@ export default function Home() {
                 setTournament(null);
               }
             }}
+            onTournamentUpdated={(t) => setTournament(t)}
           />
         )}
       </main>

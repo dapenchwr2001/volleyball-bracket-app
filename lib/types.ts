@@ -26,10 +26,21 @@ export interface Pool {
   matches: Match[];
 }
 
+export interface ScheduleEntry {
+  matchId: string;
+  poolId: string;
+  poolName: string;
+  team1Name: string;
+  team2Name: string;
+  time: string;
+  court: string;
+}
+
 export interface Tournament {
   id: string;
   name: string;
   pools: Pool[];
+  schedule?: ScheduleEntry[];
 }
 
 // Tournament results after seeding
