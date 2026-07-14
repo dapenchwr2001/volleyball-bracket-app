@@ -7,6 +7,7 @@ import StandingsView from "./standings-view";
 import BracketsView from "./brackets-view";
 import PoolEditor from "./pool-editor";
 import ScheduleView from "./schedule-view";
+import { buildShareUrl } from "@/lib/share-utils";
 
 interface TournamentViewProps {
   tournament: Tournament;
@@ -26,10 +27,19 @@ const TABS: { id: ViewMode; label: string; short: string }[] = [
 export default function TournamentView({ tournament, onBack, onTournamentUpdated }: TournamentViewProps) {
   const [viewMode, setViewMode] = useState<ViewMode>("entry");
   const [updatedTournament, setUpdatedTournament] = useState(tournament);
+  const [shareCopied, setShareCopied] = useState(false);
 
   const handleTournamentUpdate = (t: Tournament) => {
     setUpdatedTournament(t);
     onTournamentUpdated?.(t);
+  };
+
+  const handleShare = () => {
+    const url = buildShareUrl(updatedTournament);
+    navigator.clipboard.writeText(url).then(() => {
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2500);
+    });
   };
 
   const poolsWithMatches = updatedTournament.pools.filter((p) => p.matches.length > 0).length;
@@ -49,7 +59,17 @@ export default function TournamentView({ tournament, onBack, onTournamentUpdated
               {totalPools} pool{totalPools !== 1 ? "s" : ""} · {updatedTournament.pools.reduce((s, p) => s + p.teams.length, 0)} teams
             </p>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+            <button
+              onClick={handleShare}
+              className={`flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg font-semibold transition ${
+                shareCopied
+                  ? "bg-green-100 text-green-700"
+                  : "bg-blue-600 text-white hover:bg-blue-700"
+              }`}
+            >
+              {shareCopied ? "✓ Link copied!" : "🔗 Share"}
+            </button>
             <button
               onClick={() => setViewMode("edit-pools")}
               className="flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1.5 rounded-lg font-medium transition"
