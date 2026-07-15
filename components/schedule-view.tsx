@@ -249,11 +249,20 @@ export default function ScheduleView({ tournament, onScheduleUpdated }: Schedule
       {/* Print-only view */}
       <style>{`
         @media print {
-          body > *:not(#schedule-print) { display: none !important; }
+          @page { margin: 0.5in; size: letter; }
+          body * { visibility: hidden !important; }
           #schedule-print { display: block !important; }
+          #schedule-print, #schedule-print * { visibility: visible !important; }
+          #schedule-print {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            background: white !important;
+          }
         }
       `}</style>
-      <div id="schedule-print" className="hidden">
+      <div id="schedule-print" style={{ display: "none" }}>
         <h1 style={{ fontSize: 20, fontWeight: "bold", marginBottom: 8 }}>{tournament.name} — Schedule</h1>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
           <thead>
