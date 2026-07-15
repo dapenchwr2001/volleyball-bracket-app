@@ -262,34 +262,78 @@ export default function ScheduleView({ tournament, onScheduleUpdated }: Schedule
           }
         }
       `}</style>
-      <div id="schedule-print" style={{ display: "none" }}>
-        <h1 style={{ fontSize: 20, fontWeight: "bold", marginBottom: 8 }}>{tournament.name} — Schedule</h1>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-          <thead>
-            <tr style={{ background: "#f3f4f6" }}>
-              <th style={{ border: "1px solid #d1d5db", padding: "6px 10px", textAlign: "left" }}>Time</th>
-              <th style={{ border: "1px solid #d1d5db", padding: "6px 10px", textAlign: "left" }}>Court</th>
-              <th style={{ border: "1px solid #d1d5db", padding: "6px 10px", textAlign: "left" }}>Pool</th>
-              <th style={{ border: "1px solid #d1d5db", padding: "6px 10px", textAlign: "left" }}>Match</th>
-            </tr>
-          </thead>
-          <tbody>
-            {[...entries]
-              .sort((a, b) => {
-                if (!a.time) return 1;
-                if (!b.time) return -1;
-                return parseTime(a.time) - parseTime(b.time);
-              })
-              .map((e) => (
-                <tr key={e.matchId}>
-                  <td style={{ border: "1px solid #d1d5db", padding: "6px 10px" }}>{e.time || "—"}</td>
-                  <td style={{ border: "1px solid #d1d5db", padding: "6px 10px" }}>{e.court || "—"}</td>
-                  <td style={{ border: "1px solid #d1d5db", padding: "6px 10px" }}>{e.poolName}</td>
-                  <td style={{ border: "1px solid #d1d5db", padding: "6px 10px" }}>{e.team1Name} vs {e.team2Name}</td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
+      <div id="schedule-print" style={{ display: "none", fontFamily: "Arial, Helvetica, sans-serif" }}>
+
+        {/* Page header */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", borderBottom: "3px solid #1e3a5f", paddingBottom: 12, marginBottom: 22 }}>
+          <div>
+            <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: 2, color: "#64748b", marginBottom: 4 }}>
+              Match Schedule
+            </div>
+            <div style={{ fontSize: 26, fontWeight: 800, color: "#1e3a5f", lineHeight: 1.1 }}>
+              {tournament.name}
+            </div>
+          </div>
+          <div style={{ textAlign: "right", fontSize: 11, color: "#94a3b8", lineHeight: 1.6 }}>
+            <div>{entries.length} total matches</div>
+            <div>{new Set(entries.map(e => e.court).filter(Boolean)).size} courts</div>
+          </div>
+        </div>
+
+        {/* Time-grouped blocks */}
+        {grouped.map(([timeLabel, timeEntries]) => {
+          const POOL_CHIP: Record<number, { bg: string; fg: string }> = {
+            0: { bg: "#dbeafe", fg: "#1d4ed8" },
+            1: { bg: "#dcfce7", fg: "#15803d" },
+            2: { bg: "#fef9c3", fg: "#a16207" },
+            3: { bg: "#f3e8ff", fg: "#7e22ce" },
+            4: { bg: "#ffedd5", fg: "#c2410c" },
+          };
+          return (
+            <div key={timeLabel} style={{ marginBottom: 14, pageBreakInside: "avoid" }}>
+              {/* Time slot header */}
+              <div style={{ backgroundColor: "#1e3a5f", color: "white", padding: "5px 14px", borderRadius: "4px 4px 0 0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: 13, fontWeight: 700 }}>
+                  {timeLabel === "Unscheduled" ? "⏳ Unscheduled" : timeLabel}
+                </span>
+                <span style={{ fontSize: 11, opacity: 0.65, fontWeight: 400 }}>
+                  {timeEntries.length} match{timeEntries.length !== 1 ? "es" : ""}
+                </span>
+              </div>
+              {/* Match rows */}
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5, border: "1px solid #cbd5e1", borderTop: "none" }}>
+                <tbody>
+                  {timeEntries.map((e, i) => {
+                    const idx = e.poolName.charCodeAt(e.poolName.length - 1) - 65;
+                    const pc = POOL_CHIP[idx % 5] ?? POOL_CHIP[0];
+                    return (
+                      <tr key={e.matchId} style={{ backgroundColor: i % 2 === 0 ? "#f8fafc" : "white", borderBottom: "1px solid #e2e8f0" }}>
+                        <td style={{ padding: "7px 14px", width: 88, fontWeight: 700, color: "#1e3a5f", fontSize: 12 }}>
+                          {e.court || "—"}
+                        </td>
+                        <td style={{ padding: "7px 8px", width: 68 }}>
+                          <span style={{ display: "inline-block", backgroundColor: pc.bg, color: pc.fg, padding: "1px 7px", borderRadius: 3, fontSize: 10.5, fontWeight: 700 }}>
+                            {e.poolName}
+                          </span>
+                        </td>
+                        <td style={{ padding: "7px 8px", color: "#111827" }}>
+                          <span style={{ fontWeight: 600 }}>{e.team1Name}</span>
+                          <span style={{ color: "#94a3b8", margin: "0 8px", fontWeight: 400 }}>vs</span>
+                          <span style={{ fontWeight: 600 }}>{e.team2Name}</span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          );
+        })}
+
+        {/* Footer */}
+        <div style={{ marginTop: 28, borderTop: "1px solid #e2e8f0", paddingTop: 8, textAlign: "center", fontSize: 10, color: "#94a3b8" }}>
+          Volleyball Bracketeer · volleyball-bracket-app.vercel.app
+        </div>
       </div>
     </div>
   );
