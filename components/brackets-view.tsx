@@ -53,6 +53,16 @@ export default function BracketsView({ tournament }: BracketsViewProps) {
 
   return (
     <div className="space-y-8">
+      {/* Print action bar — top */}
+      <div className="flex justify-end">
+        <button
+          onClick={() => window.print()}
+          className="flex items-center gap-1.5 bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-blue-700 active:scale-95 transition shadow-sm"
+        >
+          🖨️ Print Brackets
+        </button>
+      </div>
+
       {activeDivisions.map((division) => {
         const bracket = brackets.get(division);
 
@@ -138,20 +148,12 @@ export default function BracketsView({ tournament }: BracketsViewProps) {
         </ul>
       </div>
 
-      {/* Print + Next Steps */}
+      {/* Next Steps */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <div className="flex justify-between items-start gap-4 mb-3">
-          <h4 className="font-semibold text-blue-900">📋 Next Steps:</h4>
-          <button
-            onClick={() => window.print()}
-            className="flex items-center gap-1.5 bg-blue-600 text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-blue-700 active:scale-95 transition shadow-sm shrink-0"
-          >
-            🖨️ Print Brackets
-          </button>
-        </div>
+        <h4 className="font-semibold text-blue-900 mb-2">📋 Next Steps:</h4>
         <ul className="text-sm text-blue-800 space-y-1">
           <li>✓ Review bracket assignments above</li>
-          <li>✓ Hit <strong>Print Brackets</strong> — each division prints on its own page</li>
+          <li>✓ Hit <strong>Print Brackets</strong> (top right) — each division prints on its own page</li>
           <li>✓ Fill in scores by hand during play · Circle the winner</li>
           <li>✓ Use 3rd place match to settle final standings</li>
         </ul>
