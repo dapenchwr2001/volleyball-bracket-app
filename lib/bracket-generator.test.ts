@@ -46,16 +46,37 @@ describe("assignToBrackets", () => {
     expect(brackets.get("Bronze")!.map((t) => t.team.id)).toEqual(["a4", "b4"]);
   });
 
-  it("drops teams placed 5th or lower in a pool (known gap: no bracket beyond Bronze is assigned)", () => {
+  it("sends 5th place to Iron and 6th place to Wood", () => {
     const poolStandings = new Map([
       [
         "poolA",
         [
-          standing("a1", 12),
-          standing("a2", 9),
-          standing("a3", 6),
-          standing("a4", 3),
-          standing("a5", 0),
+          standing("a1", 15),
+          standing("a2", 12),
+          standing("a3", 9),
+          standing("a4", 6),
+          standing("a5", 3),
+          standing("a6", 0),
+        ],
+      ],
+    ]);
+    const brackets = assignToBrackets(poolStandings);
+    expect(brackets.get("Iron")!.map((t) => t.team.id)).toEqual(["a5"]);
+    expect(brackets.get("Wood")!.map((t) => t.team.id)).toEqual(["a6"]);
+  });
+
+  it("drops teams placed 7th or lower in a pool (no division exists beyond Wood)", () => {
+    const poolStandings = new Map([
+      [
+        "poolA",
+        [
+          standing("a1", 18),
+          standing("a2", 15),
+          standing("a3", 12),
+          standing("a4", 9),
+          standing("a5", 6),
+          standing("a6", 3),
+          standing("a7", 0),
         ],
       ],
     ]);
@@ -64,8 +85,10 @@ describe("assignToBrackets", () => {
       ...brackets.get("Gold")!,
       ...brackets.get("Silver")!,
       ...brackets.get("Bronze")!,
+      ...brackets.get("Iron")!,
+      ...brackets.get("Wood")!,
     ].map((t) => t.team.id);
-    expect(assigned).not.toContain("a5");
+    expect(assigned).not.toContain("a7");
   });
 });
 

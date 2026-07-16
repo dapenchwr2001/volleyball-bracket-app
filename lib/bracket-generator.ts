@@ -7,7 +7,17 @@ import {
   Pool,
 } from "./types";
 
-// Assign teams to brackets based on pool placement (1st→Gold, 2nd/3rd→Silver, 4th→Bronze)
+// Assign teams to brackets based on pool placement:
+// 1st→Gold, 2nd/3rd→Silver, 4th→Bronze, 5th→Iron, 6th→Wood.
+const PLACEMENT_DIVISIONS: BracketDivision[] = [
+  "Gold",
+  "Silver",
+  "Silver",
+  "Bronze",
+  "Iron",
+  "Wood",
+];
+
 export function assignToBrackets(
   poolStandings: Map<string, TeamStanding[]>
 ): Map<BracketDivision, BracketTeam[]> {
@@ -15,29 +25,23 @@ export function assignToBrackets(
     ["Gold", []],
     ["Silver", []],
     ["Bronze", []],
+    ["Iron", []],
+    ["Wood", []],
   ]);
 
   // Iterate through each pool's standings and assign by placement
   poolStandings.forEach((standings) => {
     standings.forEach((standing, placement) => {
+      const division = PLACEMENT_DIVISIONS[placement];
+      if (!division) return; // pools deeper than 6 teams have no further division to fall into
+
       const bracketTeam: BracketTeam = {
         seed: 0, // Will be re-seeded
         team: standing.team,
         standing: standing,
       };
 
-      // 1st place (index 0) → Gold
-      if (placement === 0) {
-        brackets.get("Gold")!.push(bracketTeam);
-      }
-      // 2nd & 3rd place (index 1 & 2) → Silver
-      else if (placement === 1 || placement === 2) {
-        brackets.get("Silver")!.push(bracketTeam);
-      }
-      // 4th place (index 3) → Bronze
-      else if (placement === 3) {
-        brackets.get("Bronze")!.push(bracketTeam);
-      }
+      brackets.get(division)!.push(bracketTeam);
     });
   });
 
